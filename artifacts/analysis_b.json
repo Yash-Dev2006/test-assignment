@@ -1,0 +1,309 @@
+{
+  "n_segments": 200,
+  "ranking": [
+    {
+      "label": "hr_payroll_items",
+      "executions": 26,
+      "dwell_seconds": 1353.0,
+      "unique_machines": 4,
+      "unique_users": 4,
+      "sessions": 10,
+      "clipboard_events": 141,
+      "clipboard_per_exec": 5.42,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Word",
+        "Notepad",
+        "OpenWith",
+        "Windows Explorer",
+        "WindowsTerminal",
+        "ms-teams",
+        "procmine-desktop-agent"
+      ],
+      "feasibility": 0.95,
+      "repetitiveness": 0.87,
+      "score": 97.57,
+      "priority": "consider"
+    },
+    {
+      "label": "finance_payroll_items",
+      "executions": 23,
+      "dwell_seconds": 1190.9,
+      "unique_machines": 4,
+      "unique_users": 4,
+      "sessions": 8,
+      "clipboard_events": 70,
+      "clipboard_per_exec": 3.04,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Excel",
+        "Microsoft Word",
+        "OpenWith",
+        "Windows Explorer",
+        "WindowsTerminal",
+        "prl_cc",
+        "procmine-desktop-agent"
+      ],
+      "feasibility": 0.95,
+      "repetitiveness": 0.75,
+      "score": 93.38,
+      "priority": "consider"
+    },
+    {
+      "label": "finance_resident_tax",
+      "executions": 18,
+      "dwell_seconds": 803.1,
+      "unique_machines": 4,
+      "unique_users": 4,
+      "sessions": 8,
+      "clipboard_events": 68,
+      "clipboard_per_exec": 3.78,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Word",
+        "Windows Explorer",
+        "WindowsTerminal",
+        "prl_cc",
+        "procmine-desktop-agent"
+      ],
+      "feasibility": 0.85,
+      "repetitiveness": 0.73,
+      "score": 86.03,
+      "priority": "consider"
+    },
+    {
+      "label": "ops_payroll_items",
+      "executions": 16,
+      "dwell_seconds": 711.0,
+      "unique_machines": 4,
+      "unique_users": 4,
+      "sessions": 9,
+      "clipboard_events": 85,
+      "clipboard_per_exec": 5.31,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Excel",
+        "Microsoft Word",
+        "Notepad",
+        "OpenWith",
+        "Windows Explorer",
+        "WindowsTerminal"
+      ],
+      "feasibility": 0.9,
+      "repetitiveness": 0.75,
+      "score": 84.38,
+      "priority": "consider"
+    },
+    {
+      "label": "ops_leave_applications",
+      "executions": 16,
+      "dwell_seconds": 1158.0,
+      "unique_machines": 4,
+      "unique_users": 4,
+      "sessions": 8,
+      "clipboard_events": 90,
+      "clipboard_per_exec": 5.62,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Excel",
+        "Microsoft Word",
+        "Windows Explorer",
+        "ms-teams"
+      ],
+      "feasibility": 0.8,
+      "repetitiveness": 0.76,
+      "score": 83.62,
+      "priority": "consider"
+    },
+    {
+      "label": "hr_onboarding",
+      "executions": 14,
+      "dwell_seconds": 1024.1,
+      "unique_machines": 4,
+      "unique_users": 4,
+      "sessions": 8,
+      "clipboard_events": 82,
+      "clipboard_per_exec": 5.86,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Excel",
+        "Microsoft Word",
+        "procmine-desktop-agent"
+      ],
+      "feasibility": 0.85,
+      "repetitiveness": 0.71,
+      "score": 80.99,
+      "priority": "consider"
+    },
+    {
+      "label": "finance_onboarding",
+      "executions": 11,
+      "dwell_seconds": 655.4,
+      "unique_machines": 4,
+      "unique_users": 4,
+      "sessions": 6,
+      "clipboard_events": 55,
+      "clipboard_per_exec": 5.0,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Word",
+        "OpenWith",
+        "WindowsTerminal"
+      ],
+      "feasibility": 0.8,
+      "repetitiveness": 0.58,
+      "score": 74.9,
+      "priority": "consider"
+    },
+    {
+      "label": "hr_leave_applications",
+      "executions": 10,
+      "dwell_seconds": 581.5,
+      "unique_machines": 3,
+      "unique_users": 3,
+      "sessions": 6,
+      "clipboard_events": 53,
+      "clipboard_per_exec": 5.3,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Word",
+        "Windows Explorer",
+        "prl_cc"
+      ],
+      "feasibility": 0.85,
+      "repetitiveness": 0.56,
+      "score": 69.3,
+      "priority": "consider"
+    },
+    {
+      "label": "ops_social_insurance",
+      "executions": 10,
+      "dwell_seconds": 493.0,
+      "unique_machines": 4,
+      "unique_users": 4,
+      "sessions": 5,
+      "clipboard_events": 54,
+      "clipboard_per_exec": 5.4,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Word",
+        "Notepad",
+        "OpenWith",
+        "Windows Explorer",
+        "WindowsTerminal",
+        "procmine-desktop-agent"
+      ],
+      "feasibility": 0.75,
+      "repetitiveness": 0.57,
+      "score": 67.7,
+      "priority": "consider"
+    },
+    {
+      "label": "finance_leave_applications",
+      "executions": 9,
+      "dwell_seconds": 575.3,
+      "unique_machines": 3,
+      "unique_users": 3,
+      "sessions": 5,
+      "clipboard_events": 49,
+      "clipboard_per_exec": 5.44,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Word",
+        "Notepad",
+        "Windows Explorer",
+        "WindowsTerminal",
+        "prl_cc",
+        "procmine-desktop-agent"
+      ],
+      "feasibility": 0.85,
+      "repetitiveness": 0.54,
+      "score": 67.45,
+      "priority": "consider"
+    },
+    {
+      "label": "hr_social_insurance",
+      "executions": 9,
+      "dwell_seconds": 501.1,
+      "unique_machines": 4,
+      "unique_users": 4,
+      "sessions": 5,
+      "clipboard_events": 40,
+      "clipboard_per_exec": 4.44,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Word",
+        "Notepad",
+        "Windows Explorer",
+        "WindowsTerminal",
+        "prl_cc"
+      ],
+      "feasibility": 0.8,
+      "repetitiveness": 0.49,
+      "score": 66.24,
+      "priority": "consider"
+    },
+    {
+      "label": "finance_social_insurance",
+      "executions": 1,
+      "dwell_seconds": 152.2,
+      "unique_machines": 1,
+      "unique_users": 1,
+      "sessions": 1,
+      "clipboard_events": 7,
+      "clipboard_per_exec": 7.0,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Excel"
+      ],
+      "feasibility": 0.8,
+      "repetitiveness": 0.38,
+      "score": 26.26,
+      "priority": "consider"
+    },
+    {
+      "label": "ops_resident_tax",
+      "executions": 1,
+      "dwell_seconds": 12.4,
+      "unique_machines": 1,
+      "unique_users": 1,
+      "sessions": 1,
+      "clipboard_events": 1,
+      "clipboard_per_exec": 1.0,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Word"
+      ],
+      "feasibility": 0.75,
+      "repetitiveness": 0.08,
+      "score": 14.27,
+      "priority": "consider"
+    },
+    {
+      "label": "unrelated",
+      "executions": 36,
+      "dwell_seconds": 1281.0,
+      "unique_machines": 4,
+      "unique_users": 4,
+      "sessions": 15,
+      "clipboard_events": 77,
+      "clipboard_per_exec": 2.14,
+      "apps": [
+        "Microsoft Edge",
+        "Microsoft Excel",
+        "Microsoft Word",
+        "Notepad",
+        "OpenWith",
+        "Windows Explorer",
+        "WindowsTerminal",
+        "ms-teams",
+        "prl_cc",
+        "procmine-desktop-agent"
+      ],
+      "feasibility": 0.05,
+      "repetitiveness": 0.71,
+      "score": 12.92,
+      "priority": "defer"
+    }
+  ]
+}
