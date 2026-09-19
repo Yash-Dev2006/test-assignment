@@ -164,4 +164,4 @@ Datasets and screenshots are local and large; they are not meant to be fully ver
 | Full repository + git history | this repo |
 | Final report | [REPORT.md](REPORT.md) |
 | Work log | [WORKLOG.md](WORKLOG.md) |
-| This walkthrough | **this file** (`README1.md`) |
+| This walkthrough | **this file** (`README.md`) |
