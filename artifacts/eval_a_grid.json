@@ -1,0 +1,14 @@
+{
+  "note": "Grid over debounce {3000,4000,5000} x idle {45000,60000,90000}. Frozen defaults: debounce_ms=4000, idle_ms=90000.",
+  "best": {
+    "n_gold": 1752,
+    "n_pred": 1866,
+    "mean_iou": 0.6351,
+    "median_iou": 0.7215,
+    "pct_iou_at_0_3": 0.8619,
+    "pct_iou_at_0_5": 0.7643,
+    "label_purity": 0.9641,
+    "debounce_ms": 4000,
+    "idle_ms": 90000
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "n_gold": 1752,
+  "n_pred": 1866,
+  "mean_iou": 0.6351,
+  "median_iou": 0.7215,
+  "pct_iou_at_0_3": 0.8619,
+  "pct_iou_at_0_5": 0.7643,
+  "label_purity": 0.9641,
+  "dominant_label_by_code": {
+    "M": "ops_leave_applications",
+    "K": "ops_resident_tax",
+    "F": "finance_resident_tax",
+    "N": "ops_social_insurance",
+    "L": "ops_payroll_items",
+    "G": "finance_payroll_items",
+    "I": "unrelated",
+    "A": "hr_resident_tax",
+    "E": "hr_onboarding",
+    "D": "hr_social_insurance",
+    "O": "ops_onboarding",
+    "C": "hr_leave_applications",
+    "H": "finance_leave_applications",
+    "J": "finance_onboarding",
+    "B": "hr_payroll_items"
+  },
+  "debounce_ms": 4000,
+  "idle_ms": 90000
+}
