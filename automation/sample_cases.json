@@ -1,0 +1,61 @@
+{
+  "source": "dataset_b extracted_text on #/payroll-items style list screens (clipboard text is redacted in logs)",
+  "portal_field": "pi-note",
+  "cases": [
+    {
+      "case_id": "P10-07084298-001",
+      "employee_or_vendor_id": "V3001",
+      "name": "株式会社山田製作所",
+      "item": "発注管理 PO-2026-5609",
+      "amount": "—",
+      "status": "完了",
+      "portal_field": "pi-note"
+    },
+    {
+      "case_id": "P10-07084298-002",
+      "employee_or_vendor_id": "V3007",
+      "name": "福岡システム設計",
+      "item": "発注管理 PO-2026-5610",
+      "amount": "—",
+      "status": "完了",
+      "portal_field": "pi-note"
+    },
+    {
+      "case_id": "P10-07084298-004",
+      "employee_or_vendor_id": "V3007",
+      "name": "福岡システム設計 ⚠",
+      "item": "発注管理 PO-2026-5612",
+      "amount": "—",
+      "status": "完了",
+      "flags": "warning_mark",
+      "portal_field": "pi-note"
+    },
+    {
+      "case_id": "P10-07084298-005",
+      "employee_or_vendor_id": "V3007",
+      "name": "福岡システム設計",
+      "item": "発注管理 PO-2026-5613",
+      "amount": "—",
+      "status": "未確認",
+      "portal_field": "pi-note"
+    },
+    {
+      "case_id": "P11-07084298-002",
+      "employee_or_vendor_id": "BATCH-W1",
+      "name": "制御基板ユニットA",
+      "item": "棚卸調整",
+      "amount": "—",
+      "status": "未処理",
+      "portal_field": "pi-note"
+    },
+    {
+      "case_id": "P3-07084298-001",
+      "employee_or_vendor_id": "E2254",
+      "name": "橋本 浩二",
+      "item": "入社照合 5項目",
+      "amount": "—",
+      "status": "完了",
+      "portal_field": "ob-note"
+    }
+  ]
+}
