@@ -1,243 +1,167 @@
-# Intern Selection Task: From Operation Logs to an Automation Proposal
+# README1 — What this repository did
 
-**Duration:** 7 days
-**Submission:** Full repository (including Git history) + final report
+This is the walkthrough of the intern selection task as actually built.
 
----
+- **[README.md](README.md)** is the original assignment. It is not a how-to.
+- **[DATA_SCHEMA.md](DATA_SCHEMA.md)** explains how to read the logs, not what to automate.
+- **[REPORT.md](REPORT.md)** is the client-facing judgment (ROI, risks, time).
+- **[WORKLOG.md](WORKLOG.md)** is what was tried and cut on this build.
 
-## Background
+Run everything with one command. Python 3 stdlib only.
 
-You have been assigned as an FDE (Forward Deployed Engineer) to a client company.
-
-In this company's back-office departments (HR, Finance, Logistics, and others), staff
-spend their days moving back and forth between internal business systems and desktop
-applications such as Excel and Word, processing routine paperwork. For these employees,
-this kind of work continues all day long.
-
-The company already runs a desktop agent that collects PC operation logs from its staff.
-Every keystroke, click, and application switch is recorded in chronological order.
-
-Management has one request:
-
-> **"Use these logs to tell us where automation would have the greatest impact on our
-> operations. And show us something that actually works."**
-
-However, what is recorded is only **operations**. Nothing in the log says
-"this person is now processing an expense claim" or "this is an onboarding procedure."
-The logs have been piling up untouched. Right now, nobody knows what work is being done,
-by whom, or how much time it takes.
-
----
-
-## Goal
-
-**Produce a proposal that maximizes the client's ROI, and demonstrate it with something
-that actually runs.**
-
-Technical accuracy is not the objective in itself. Your judgment is what is being
-assessed — including how you choose to spend your 7 days.
-
----
-
-## Provided Data
-
-See **`DATA_SCHEMA.md`** for the full data specification.
-
-### Dataset A (with ground truth / 63 sessions / ~162,000 events)
-
-```
-dataset_a/
-  ses_<date>-<time>-<machine>/
-    chunk_<date>-<time>-<machine>/
-      events.jsonl        <- raw operation log
-      manifest.json       <- chunk metadata
-      screenshots/        <- screen captures referenced by screenshot events
-    gt.jsonl              <- ground truth
-    gt_manifest.json      <- ground truth summary (per session)
+```bash
+python3 run.py
 ```
 
-`gt.jsonl` records when each business process started and ended.
-Use this dataset to build and validate your approach.
+---
 
-Note that a single session may be split across multiple chunks. This is a property of
-how the agent records data — it is not an anomaly.
+## 1. Goal
 
-### Dataset B (no ground truth / 15 sessions / ~20,000 events)
+Recover units of work from PC operation logs, rank Dataset B processes for automation, and ship a prototype that runs.
 
+Dataset A (`dataset_a 2/`) has ground truth. It is used for **one** IoU measurement so we know whether the cutter is good enough to rank. Dataset B (`dataset_b/`) has no ground truth; it is the production analysis. Japanese process names from A are **not** copied onto B.
+
+“Good enough” here means: same gold process usually gets the same predicted label, and most gold spans overlap a predicted span at IoU ≥ 0.5. It does **not** mean billable time from segments.
+
+---
+
+## 2. Repository map
+
+| Path | Role |
+|---|---|
+| `run.py` | Only public entry. Eval A → segment/rank B → demo. |
+| `pipeline.py` | Merge chunks, drop `SYSTEM`, label portal routes, cut on route change or 60s idle. |
+| `eval_a.py` | Single IoU pass vs `gt_manifest.json`. No grid search. |
+| `analyze_b.py` | Rank labels with a product score. |
+| `demo.py` | Memo / portal-note / CSV drafts from case JSON. |
+| `dataset_a 2/` | 63 sessions, ~162k events, ground truth. Folder name is `dataset_a 2`. |
+| `dataset_b/` | 15 sessions, ~20k events, no GT. |
+| `segments.jsonl` | Step 1 deliverable (Dataset B, non-`unrelated`). |
+| `artifacts/eval_a.json` | Dataset A metrics (60s idle). |
+| `artifacts/analysis_b.json` | Full ranking, including `unrelated`. |
+| `automation/sample_cases.json` | Cases taken from B `extracted_text` (clipboard text is redacted). |
+| `automation/out/` | Demo outputs. |
+
+Chunks are recording buckets, not process boundaries. Ingest concatenates them by timestamp.
+
+---
+
+## 3. Step 1 — how a click stream becomes a label
+
+Nothing in the log says “expense claim started.” A unit of work is **time on one portal route** (`127.0.0.1` port + URL hash such as `#/payroll-items`), including Excel / Word / Notepad hops that keep the last real hash (copy-paste).
+
+Rules in `pipeline.py`:
+
+- Drop `SYSTEM` events.
+- Port `5122/5132` → `hr`, `5123/5133` → `finance`, `5124/5134` → `ops`.
+- Hash `#/payroll-items` → `payroll_items`, and the same for onboarding, leave, social-insurance, resident-tax.
+- Dashboard hashes are navigation: keep the last real route, else `unrelated`.
+- Explorer / Teams / terminal with no portal context → `unrelated`.
+- Split when the label changes **or** idle exceeds **60 seconds**. No debounce grid.
+
+Labels are snake_case (`hr_payroll_items`), not Dataset A `family_name` values.
+
+**Dataset A eval** (`artifacts/eval_a.json`, 1,752 gold executions):
+
+| Metric | Value |
+|---|---|
+| Mean IoU | 0.627 |
+| Median IoU | 0.733 |
+| Share of gold spans with IoU ≥ 0.5 | 73.1% |
+| Label purity (same gold code → one predicted label) | 0.961 |
+
+Gold code `I` often lands on `unrelated` (Excel-heavy work with a weak portal signal). That miss is left visible.
+
+`segments.jsonl` is one JSON object per line:
+
+```json
+{"session_id": "ses_…", "start": "2026-07-01T16:44:42Z", "end": "2026-07-01T16:45:16Z", "label": "finance_payroll_items"}
 ```
-dataset_b/
-  ses_<date>-<time>-<machine>/
-    chunk_<date>-<time>-<machine>/
-      events.jsonl        <- raw operation log
-      manifest.json       <- chunk metadata
-      screenshots/        <- screen captures referenced by screenshot events
+
+`unrelated` rows are omitted from the file. They still appear in `artifacts/analysis_b.json`.
+
+---
+
+## 4. Step 2 — Dataset B ranking
+
+Four hashed users, 15 sessions. Work is swivel-chair: Edge on `:5132` (HR), `:5133` (finance), `:5134` (ops), plus Word, Excel, Notepad. Operators paste into portal fields such as `#pi-note`. Clipboard **text** is null; only event counts are used.
+
+The three portals share hash routes. `#/payroll-items` is people/payroll-style rows on HR, PO/vendor lists on finance, inventory batches on ops. The **procedure** (open list → copy fields → paste a note) is what we automate.
+
+Score = `executions × dwell_seconds × people × (1 + clipboard_per_exec)`. The `+1` keeps a process with zero clipboard events from scoring zero. `unrelated` scores high on volume; it is still **deferred** (no structure, Teams/Explorer noise).
+
+**Priority** (from `artifacts/analysis_b.json`):
+
+1. `hr_payroll_items` — 31 exec, 1168s, 143 clipboard events, 4 people. Highest score.
+2. `ops_leave_applications` — 19 exec, long dwell, high clipboard. Strong runner-up, more mixed Excel.
+3. `finance_payroll_items` — 28 exec, same 4 people, same list+note pattern.
+4. `hr_onboarding` — 17 exec; Word checklist in the loop.
+5. `ops_payroll_items` — 18 exec, highest clipboard per exec (~5.1).
+6. Other leave / tax / insurance routes — fewer executions, same note-paste pattern.
+7. **Defer:** `unrelated` (Explorer, Teams, terminal, OpenWith).
+
+**Chosen build target:** the `#/payroll-items` family (HR + finance + ops): 31+28+18 = **77 executions** in this sample. Most frequent structured list+note loop, all four people, no Teams driving.
+
+Logs are sped up versus production. Rankings are relative, not claimed FTE hours.
+
+---
+
+## 5. Step 3 — prototype
+
+`demo.py` turns structured case rows into:
+
+- `automation/out/settlement_memo.txt` — 精算確認メモ-style draft
+- `automation/out/portal_notes.jsonl` — per-case text for `#pi-note` / `#ob-note`
+- `automation/out/spreadsheet_rows.csv` — same rows for Excel
+
+Exception rows (⚠, 未確認, 未処理) are listed and **not** auto-approved. Sample input: [automation/sample_cases.json](automation/sample_cases.json).
+
+**Why this process and scope:** highest-impact list+note loop. Scope is draft generation, not clicking a live desktop: no live API besides mock localhost apps; clipboard contents missing so pixel RPA cannot be checked; warning rows are already a human gate.
+
+**Why this form:** deterministic Python runs offline and maps 1:1 to observed fields. n8n / Power Automate needs a tenant and connectors we do not have. Full desktop RPA is fragile with no running UI. An LLM-only agent would invent amounts from redacted clipboards.
+
+**Still human:** login/SSO, deciding 未確認 rows, confirming ⚠ vendors, pasting/clicking Complete, any case not in the list schema.
+
+**Realistic impact in this sample:** 77 payroll-items executions with several clipboard events each. If half of those pastes become “generate note → human clicks paste,” repetitive typing drops; exception handling does not.
+
+---
+
+## 6. Reproduce
+
+From the repo root:
+
+```bash
+python3 run.py
 ```
 
-**This is the production data you are asked to analyze.** There is no ground truth.
-It comes from different departments performing different work than Dataset A,
-and the applications in use are also different.
+Skip Dataset A (faster) if you only need B + demo:
+
+```bash
+python3 run.py --skip-a
+```
+
+Expected files: `artifacts/eval_a.json` (unless `--skip-a`), `artifacts/analysis_b.json`, `segments.jsonl`, `automation/out/*`.
+
+Datasets and screenshots are local and large; they are not meant to be fully versioned.
 
 ---
 
-## Tasks
+## 7. What we did not do
 
-### Step 1 — Recover units of work from the logs
-
-`events.jsonl` is simply a list of keystrokes, clicks, and application switches
-**in the order they occurred.** There are no markers saying "an expense claim started here"
-or "it ended here."
-
-Your task is to recover "one coherent unit of work" from this stream.
-In other words, **the goal of Step 1 is to segment a continuous sequence of events into
-individual executions of business processes.**
-
-#### What makes this difficult
-
-Real office workers do not behave the way a textbook would suggest.
-
-- **Work is not contiguous.** A person switches to a different task partway through one,
-  then returns to it later
-- **The same process appears many times a day.** Different cases are processed
-  using the same procedure, over and over
-- **The same process does not always follow the same steps.** Depending on the case
-  and the conditions, the systems visited and the items checked will differ
-- **Operations unrelated to any business process are mixed in**
-
-#### How to proceed
-
-Start with Dataset A. Because A includes ground truth (`gt.jsonl`), **you can measure
-how correct your approach is.** How far you push accuracy — and what you consider
-"good enough" — is left to your judgment.
-
-For the output format, see the Deliverables section.
-
-### Step 2 — Analyze the work and identify automation candidates
-
-Apply your Step 1 approach to Dataset B, and analyze the operations based on its output.
-
-- What processes are performed, how often, and how much time do they consume?
-- How many people are involved?
-- Are there different handling patterns within the same process?
-
-Then, **propose which processes should be automated, in priority order.**
-Explain the reasoning behind that ordering.
-
-### Step 3 — Build an automation tool
-
-From the candidates identified in Step 2, build the one (or ones) you judge to have
-the greatest impact.
-
-The form your "automation tool" takes is up to you. Any of the following is acceptable,
-as are approaches not listed here:
-
-- An AI agent (for example, something like Copilot given a set of procedure definitions)
-- A workflow definition (n8n, Power Automate, etc.)
-- A deterministic script (Python, PowerShell, etc.)
-- A desktop application
-- A web application
-
-#### Consider feasibility when choosing
-
-An idea with large potential impact is worthless if it cannot be built. Before deciding
-what to target, assess the **overall development difficulty**. For example:
-
-- How would you access the data in the target system?
-- How complex is the business logic? How many decision branches are there?
-- What operational and governance constraints apply?
-- What risks would only surface once implementation begins?
-
-The information you can extract from the provided logs is limited.
-**We are looking at how well you can anticipate realistic risks from that limited
-information.** Proposals built purely on optimistic assumptions will not score well.
-
-#### Decide the number and scope yourself
-
-**We do not specify how many tools to build.** Whether you build one thing specialized
-for a single process, or a general mechanism that can be extended across several processes
-(for example, a shared foundation with per-process definitions) — **that decision is itself
-part of the ROI question.**
-
-A broadly applicable design has a higher ceiling, but delivers zero value if you cannot
-finish it. State clearly what you chose to cover, what you deferred to a later phase,
-and why.
-
-#### What your report must explain
-
-A working prototype is sufficient. Polish itself is not evaluated; judgment is.
-Your report must address the following four points:
-
-1. **Why you chose that process, and why that scope**
-2. **Why you chose that implementation form** — including why you rejected the alternatives
-3. **What manual work remains after deployment**, and what impact can realistically be expected
-4. **What risks you anticipate in implementation and rollout, and how you would address them**
-   — including what evidence led you to anticipate each risk
+- Screenshot / OCR models (`extracted_text` already has list tables).
+- Transfer Dataset A Japanese family names onto B.
+- Grid-search thresholds or sequence models.
+- Live RPA against the mock HTTP portals.
+- Automating Teams, Explorer, or policy Word documents.
 
 ---
 
-## Deliverables
+## 8. Assignment deliverables vs this repo
 
-1. **Step 1 output** — the result of applying your approach to Dataset B,
-   submitted as `segments.jsonl`
-
-   One JSON object per line:
-
-   ```json
-   {"session_id": "ses_20260701-183232-LAPTOP-76QMG9DE", "start": "2026-07-01T18:32:32Z", "end": "2026-07-01T18:35:41Z", "label": "expense_processing"}
-   ```
-
-   | Field | Description |
-   |---|---|
-   | `session_id` | The session directory name |
-   | `start` / `end` | Segment start and end time (ISO 8601, UTC) |
-   | `label` | Your own name for the process. **Use the same label for the same process** |
-
-   The label text itself is not evaluated — name them however you like.
-   What is evaluated is whether the boundaries between units of work are correct,
-   and whether the same process consistently receives the same label.
-
-2. **Full repository** — include your Git history (we review how the work progressed)
-
-3. **Final report** — must include:
-   - Your Step 2 analysis, the prioritized automation candidates, and the reasoning
-   - A description of what you built in Step 3, **why that process and scope**,
-     and **why that implementation form**
-   - **What manual work remains after deployment, and the impact you realistically expect**
-   - **Anticipated implementation and rollout risks, with your mitigation approach**
-   - How you allocated the 7 days, and why
-
-4. **Work log** — what you were thinking each day, what you tried, and what did not work
-
----
-
-## Notes and Constraints
-
-- **No ground truth is provided for Dataset B.** We will score your submission
-  after you submit it.
-- **The logs come from a Japanese company.** Screen text, business process names, and
-  application UI content are in Japanese. You are free to use translation tools or LLMs.
-- These logs were recorded in a test environment, so the waiting time within each
-  operation is shorter than in real production use. Judge candidates by comparing
-  processes against each other rather than by absolute figures.
-- Some events in `events.jsonl` (`text_input_complete`) are unreliably recorded.
-  Reconstruct from other events if you need that information.
-- **You are free to use generative AI.** Please record how you used it in your work log.
-- Any programming language or library is acceptable.
-
----
-
-## FAQ
-
-**Q. How accurate does Step 1 need to be?**
-A. We will not give you a threshold. Deciding what counts as "good enough" is part of
-the task.
-
-**Q. Does the Step 3 tool need to be production-ready?**
-A. No. A working prototype is sufficient.
-
-**Q. Will I score higher by building something technically sophisticated?**
-A. No. We evaluate the client's ROI. What matters is whether your technical choices
-fit the objective.
-
-**Q. I could not complete all three steps.**
-A. Record in your work log why you did not, and how you arrived at the decisions you made
-along the way.
+| Assignment item | Where it is |
+|---|---|
+| Step 1 output on Dataset B | [segments.jsonl](segments.jsonl) |
+| Full repository + git history | this repo |
+| Final report | [REPORT.md](REPORT.md) |
+| Work log | [WORKLOG.md](WORKLOG.md) |
+| This walkthrough | **this file** (`README1.md`) |
