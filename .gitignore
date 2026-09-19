@@ -1,0 +1,13 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+automation/out/
+dataset_a/
+dataset_a 2/
+dataset_a 3/
+dataset_a 4/
+dataset_a 5/
+dataset_a 6/
+dataset_b/
+**/screenshots/
